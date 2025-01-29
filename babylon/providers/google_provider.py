@@ -77,3 +77,43 @@ if 'pytest' in sys.modules:
             pytest.fail(f"Google API request failed: {e}")
         except AssertionError as e:
             pytest.fail(f"Google Response assertion failed: {e}. Raw response: {response.get('raw_response') if 'response' in locals() else 'No response received'}")
+
+    @pytest.mark.asyncio
+    async def test_google_tool(google_provider: LLMProvider):
+        log = get_logger(__name__)
+        found_tool_call = False
+        tools = [
+            {
+                "function_declarations": [
+                    {
+                        "name": "get_stock_price",
+                        "description": "Get the current stock price for a given ticker symbol.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "ticker": {
+                                    "type": "string",
+                                    "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+        messages = [{"role": "user", "content": "Hello Google Gemini, this is a test. What's the stock price for NVDA?"}]
+        model = "gemini-pro"
+        try:
+            response = await google_provider.chat_completion(messages, model, tools=tools)
+
+            for candidate in response["raw_response"]["candidates"]:
+                for part in candidate["content"]["parts"]:
+                    if "functionCall" in part:
+                        found_tool_call = True
+
+        except aiohttp.ClientError as e:
+            pytest.fail(f"Anthropic API request failed: {e}")
+        except AssertionError as e:
+            pytest.fail(f"Anthropic Response assertion failed: {e}. Raw response: {response.get('raw_response') if 'response' in locals() else 'No response received'}")
+
+        assert found_tool_call

@@ -34,7 +34,7 @@ class OpenAIProvider(LLMProvider):
     def _extract_text_from_response(self, raw_response):
         """OpenAI-specific text extraction from response."""
         if raw_response and raw_response.get('choices'):
-            return raw_response['choices'][0]['message']['content'].strip()
+            return raw_response['choices'][0]['message']['content']
         return None
 
     def _extract_usage_from_response(self, raw_response):
@@ -75,3 +75,43 @@ if 'pytest' in sys.modules:
             pytest.fail(f"OpenAI API request failed: {e}")
         except AssertionError as e:
             pytest.fail(f"OpenAI Response assertion failed: {e}. Raw response: {response.get('raw_response') if 'response' in locals() else 'No response received'}")
+
+    @pytest.mark.asyncio
+    async def test_openai_tool(openai_provider: LLMProvider):
+        log = get_logger(__name__)
+        found_tool_call = False
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_stock_price",
+                    "description": "Get the current stock price for a given ticker symbol.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "ticker": {
+                                "type": "string",
+                                "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
+                            }
+                        },
+                        "required": ["ticker"]
+                    }
+                }
+            }
+        ]
+        messages = [{"role": "user", "content": "Hello GPT, this is a test. What's the stock price for NVDA?"}]
+        model = "gpt-4o-mini"
+
+        try:
+            response = await openai_provider.chat_completion(messages, model, tools=tools)
+
+            for choice in response["raw_response"]["choices"]:
+                if "tool_calls" in choice["message"]:
+                    found_tool_call = True
+
+        except aiohttp.ClientError as e:
+            pytest.fail(f"Anthropic API request failed: {e}")
+        except AssertionError as e:
+            pytest.fail(f"Anthropic Response assertion failed: {e}. Raw response: {response.get('raw_response') if 'response' in locals() else 'No response received'}")
+
+        assert found_tool_call
