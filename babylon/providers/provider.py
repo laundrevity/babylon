@@ -7,7 +7,8 @@ from logging import getLogger as get_logger
 
 # Configure basic logging - you can customize this further
 logging.basicConfig(level=logging.DEBUG,  # Set default logging level to DEBUG
-                    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s') # Customize format
+                    format='%(asctime)s.%(msecs)03d T[%(thread)d] %(levelname)s %(filename)s:%(lineno)d %(name)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S') # Customize format to include milliseconds and thread
 
 
 class LLMProvider(abc.ABC):

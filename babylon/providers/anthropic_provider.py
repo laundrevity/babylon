@@ -75,3 +75,35 @@ if 'pytest' in sys.modules:
             pytest.fail(f"Anthropic API request failed: {e}")
         except AssertionError as e:
             pytest.fail(f"Anthropic Response assertion failed: {e}. Raw response: {response.get('raw_response') if 'response' in locals() else 'No response received'}")
+
+    @pytest.mark.asyncio
+    async def test_anthropic_chat_completion_tool(anthropic_provider):
+        log = get_logger(__name__)
+        tools = [
+            {
+                "name": "get_stock_price",
+                "description": "Get the current stock price for a given ticker symbol.",
+                "input_schema": 
+                {
+                    "type": "object",
+                    "properties": 
+                    {
+                        "ticker": 
+                        {
+                            "type": "string",
+                            "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
+                        }
+                    },
+                "required": ["ticker"]
+                }
+            }
+        ]
+        messages = [{"role": "user", "content": "Hello Anthropic Claude, this is a test. Whats the stock price for NVDA?"}]
+        model = "claude-3-opus-20240229"
+        try:
+            response = await anthropic_provider.chat_completion(messages, model, tools=tools)
+            log.info("recv response[%s]", response)
+        except aiohttp.ClientError as e:
+            pytest.fail(f"Anthropic API request failed: {e}")
+        except AssertionError as e:
+            pytest.fail(f"Anthropic Response assertion failed: {e}. Raw response: {response.get('raw_response') if 'response' in locals() else 'No response received'}")
