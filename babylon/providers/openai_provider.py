@@ -1,7 +1,6 @@
 # babylon/providers/openai_provider.py
 import sys
 import aiohttp
-import json
 import os
 from babylon.providers.provider import LLMProvider  # Import the refactored base class
 from logging import getLogger as get_logger
@@ -54,7 +53,7 @@ if 'pytest' in sys.modules:
     import asyncio
 
     @pytest.mark.asyncio  # Decorator for async test function
-    async def test_openai_chat_completion(openai_provider): # Fixture as direct argument
+    async def test_openai_chat_completion(openai_provider: LLMProvider): # Fixture as direct argument
         log = get_logger("test_openai_chat_completion")
         messages = [{"role": "user", "content": "Hello OpenAI, this is a test."}]
         model = "gpt-4o-mini"

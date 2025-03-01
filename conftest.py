@@ -5,11 +5,13 @@ from babylon.providers.openai_provider import OpenAIProvider
 from babylon.providers.deepseek_provider import DeepSeekProvider
 from babylon.providers.google_provider import GoogleProvider
 from babylon.providers.anthropic_provider import AnthropicProvider
+from babylon.providers.xai_provider import xAIProvider
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+XAI_API_KEY = os.getenv("XAI_API_KEY")
 
 @pytest.fixture(scope="session")
 def openai_provider():
@@ -34,3 +36,9 @@ def anthropic_provider():
     if not ANTHROPIC_API_KEY:
         pytest.skip("ANTHROPIC_API_KEY environment variable not set")
     return AnthropicProvider(api_key=ANTHROPIC_API_KEY)
+
+@pytest.fixture(scope="session")
+def xai_provider():
+    if not XAI_API_KEY:
+        pytest.skip("XAI_API_KEY environment variable not set")
+    return xAIProvider(api_key=XAI_API_KEY)

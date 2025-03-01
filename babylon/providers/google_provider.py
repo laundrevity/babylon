@@ -102,7 +102,7 @@ if 'pytest' in sys.modules:
             }
         ]
         messages = [{"role": "user", "content": "Hello Google Gemini, this is a test. What's the stock price for NVDA?"}]
-        model = "gemini-pro"
+        model = "gemini-1.5-flash"
         try:
             response = await google_provider.chat_completion(messages, model, tools=tools)
 
